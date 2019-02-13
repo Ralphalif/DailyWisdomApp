@@ -4,7 +4,7 @@ import {
   Image,
   View,
   Text,
-  TouchableOpacity,
+  TouchableWithoutFeedback,
   ImageBackground,
   Animated,
   ActivityIndicator,
@@ -83,7 +83,7 @@ export default class HomeScreen extends Component {
         this.state.fadeAnim,
         {
           toValue: 0,
-          duration: 500,
+          duration: 400,
         }
       ).start();
 
@@ -103,7 +103,7 @@ export default class HomeScreen extends Component {
           quoteAuthor: '',
           pressScreenText: '',
         })
-      }, 500);
+      }, 400);
     }
 
   _changeQuote(){
@@ -139,7 +139,7 @@ export default class HomeScreen extends Component {
         this.state.fadeAnim,
         {
           toValue: 1,
-          duration: 800,
+          duration: 700,
         }
       ).start();
   }
@@ -243,7 +243,8 @@ export default class HomeScreen extends Component {
         </Text>
 
           <Animated.View style={[Styles.backgroundContainer, {opacity: this.state.fadeAnim}]} >
-              <TouchableOpacity style={Styles.container}  onPress={() => this._changeImage()}   >
+              <TouchableWithoutFeedback style={Styles.container}  onPress={() => this._changeImage()}   >
+              <View style={Styles.container} >
               <ViewShot ref="viewShot" style={Styles.container}  options={{ format: "jpg", quality: 0.9 }}>
                 <View style={Styles.backgroundContainer}>
                   <ImageBackground style={Styles.container} source={this.state.backgroundImageSource}
@@ -271,8 +272,8 @@ export default class HomeScreen extends Component {
                            alignSelf: 'center'}}
                        source={require('./images/iconUglyDownload.png')} />
                  </Animated.View>
-
-              </TouchableOpacity>
+</View>
+              </TouchableWithoutFeedback>
 
               <ReactNativeTooltipMenu
                     buttonComponent={
