@@ -241,9 +241,7 @@ export default class HomeScreen extends Component {
         <Text style={Styles.headText}>
           Daily Wisdom
         </Text>
-        <View style={{top: '10%'}}>
-          <ActivityIndicator size="large" color='rgba(255, 238, 170, 0.9)'/>
-        </View>
+
           <Animated.View style={[Styles.backgroundContainer, {opacity: this.state.fadeAnim}]} >
               <TouchableOpacity style={Styles.container}  onPress={() => this._changeImage()}   >
               <ViewShot ref="viewShot" style={Styles.container}  options={{ format: "jpg", quality: 0.9 }}>
@@ -297,10 +295,14 @@ export default class HomeScreen extends Component {
                       },
                     ]} />
           </Animated.View>
-
       </View>
     );
   }
 };
+
+
+// <View style={{top: '10%'}}>
+//   <ActivityIndicator size="large" color='rgba(255, 238, 170, 0.9)'/>
+// </View>
 
 AppRegistry.registerComponent('HomeScreen', () => HomeScreen);
