@@ -29,7 +29,7 @@ export default class HomeScreen extends Component {
        quoteText: '',
        quoteAuthor: '',
        quoteFontSize: 30,
-       backgroundImageSource: Images['IMG_' + Math.floor(Math.random() * 28)],
+       backgroundImageSource: Images['IMG_' + Math.floor(Math.random() * 80)],
        fontLoaded: false,
        pressScreenText: 'Press screen for more quotes!',
        pressScreenTextOpacity: new Animated.Value(1),
@@ -93,7 +93,7 @@ export default class HomeScreen extends Component {
        }
        showedImgsArray.push(imgNr);
 
-       if(showedImgsArray.length == 60)
+       if(showedImgsArray.length == 50)
        showedImgsArray.shift();
 
       setTimeout(() => {
@@ -139,7 +139,7 @@ export default class HomeScreen extends Component {
         this.state.fadeAnim,
         {
           toValue: 1,
-          duration: 900,
+          duration: 700,
         }
       ).start();
   }
