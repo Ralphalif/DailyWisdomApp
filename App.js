@@ -19,9 +19,9 @@ import Styles from './components/HomeScreenStyle.js';
 import ViewShot from "react-native-view-shot";
 import ReactNativeTooltipMenu from 'react-native-tooltip-menu';
 
-const quoteArray = require('./quotes.json');
+var quoteArray = require('./quotes.json');
 var showedImgsArray = [];
-var showedQuotesArray = [];
+var noOfClicks = 0;
 export default class HomeScreen extends Component {
   constructor(props) {
      super(props);
@@ -39,43 +39,46 @@ export default class HomeScreen extends Component {
      };
    }
 
- onShare () {
+   async componentDidMount() {
+     this.quoteArray = await this._shuffleArray(quoteArray)
+     await Font.loadAsync({
+         'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
+         'riesling': require('./Fonts/riesling.ttf')
+       });
+       this.setState({
+         fontLoaded: true
+       })
+     }
+
+   _shuffleArray(array) {
+       for (let i = array.length - 1; i > 0; i--) {
+           const j = Math.floor(Math.random() * (i + 1));
+           [array[i], array[j]] = [array[j], array[i]];
+       }
+   }
+
+ _onShare() {
    this.setState({
      pressScreenText: '',
    })
 
     this.refs.viewShot.capture().then(uri => {
-      var origURL = CameraRoll.saveToCameraRoll(uri);
 
       if(Platform.OS === "android")
       {
         Share.share({
-         message:
-           'React Native | A framework for building native apps using React',
-           url: origURL
+           message: this.state.quoteText + this.state.quoteAuthor ,
+           url: uri
        });
-     }else {
-       console.log("HAAAY - " +uri);
+      } else {
        var origURL = CameraRoll.saveToCameraRoll(uri);
        let instagramURL = `instagram://library?AssetPath=${uri}`;
-       console.log("Wilshare . " + instagramURL);
        Linking.openURL(instagramURL);
      }
   });
+ };
 
-};
-
-async componentDidMount() {
-  await Font.loadAsync({
-      'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
-      'riesling': require('./Fonts/riesling.ttf')
-    });
-    this.setState({
-      fontLoaded: true
-    })
-  }
-
-  _changeImage = () => {
+  _changeImage(){
       Animated.timing(
         this.state.fadeAnim,
         {
@@ -84,18 +87,18 @@ async componentDidMount() {
         }
       ).start();
 
-      var imgName = 'IMG_' + this._getRandomInt(28);
-      while(showedImgsArray.includes(imgName)){
-          imgName = 'IMG_' + this._getRandomInt(28);
+      var imgNr = this._getRandomInt(80);
+      while(showedImgsArray.includes(imgNr)){
+          imgNr = this._getRandomInt(80);
        }
-       showedImgsArray.push(imgName);
+       showedImgsArray.push(imgNr);
 
-       if(showedImgsArray.length == 10)
+       if(showedImgsArray.length == 60)
        showedImgsArray.shift();
 
       setTimeout(() => {
         this.setState({
-          backgroundImageSource: Images[imgName],
+          backgroundImageSource: Images['IMG_' + imgNr],
           quoteText: '',
           quoteAuthor: '',
           pressScreenText: '',
@@ -103,16 +106,14 @@ async componentDidMount() {
       }, 900);
     }
 
-  _changeQuote = () => {
-      var randomQuote = quoteArray[this._getRandomInt(quoteArray.length)];
+  _changeQuote(){
+      var randomQuote = quoteArray[noOfClicks];
+      noOfClicks++;
 
-      while(showedQuotesArray.includes(randomQuote[1])){
-          randomQuote = quoteArray[this._getRandomInt(quoteArray.length)];
-       }
-       showedQuotesArray.push(randomQuote);
-
-      if(showedQuotesArray.length == 40)
-          showedQuotesArray.shift();
+      if(noOfClicks == quoteArray.length){
+        this._shuffleArray(quoteArray);
+        noOfClicks = 0;
+      }
 
       var quote = randomQuote[1];
       var author = randomQuote[2];
@@ -127,10 +128,9 @@ async componentDidMount() {
       else if(quote.length > 145)
         quoteFontSize = 25;
 
-
       this.setState({
         quoteText: quote,
-        quoteAuthor: author == '' ? author : "\n-- " + author,
+        quoteAuthor: "\n" + author,
         quoteFontSize: quoteFontSize,
         fontLoaded: true
       })
@@ -144,7 +144,7 @@ async componentDidMount() {
       ).start();
   }
 
-  async _screenshotPicture() {
+  async _screenshotPicture(){
     let permission = await Expo.Permissions.askAsync(Expo.Permissions.CAMERA_ROLL);
 
     if (permission.status === 'granted') {
@@ -155,7 +155,6 @@ async componentDidMount() {
       this.refs.viewShot.capture().then(uri => {
          this._savePicture(uri);
          console.log(uri);
-         //this.onShare(uri);
       });
     }
   }
@@ -163,75 +162,75 @@ async componentDidMount() {
   _savePicture(uri){
     var promise = CameraRoll.saveToCameraRoll(uri);
 
-    Animated.parallel([
-      Animated.timing(
-        this.state.downloadIconOpacity,
-        {
-          toValue: 1,
-          duration: 500,
-        }
-      ),
-      Animated.timing(
-        this.state.downloadIconTop,
-        {
-          toValue: 1000,
-          duration: 2100,
-        }
-      )
-    ]).start();
+      Animated.parallel([
+        Animated.timing(
+          this.state.downloadIconOpacity,
+          {
+            toValue: 1,
+            duration: 500,
+          }
+        ),
+        Animated.timing(
+          this.state.downloadIconTop,
+          {
+            toValue: 1000,
+            duration: 2100,
+          }
+        )
+      ]).start();
 
-    setTimeout(() => {
-      Animated.timing(
-        this.state.downloadIconOpacity,
-        {
-          toValue: 0,
-          duration: 700,
-          delay: 500
-        }
-      ).start();
-    }, 500);
+      setTimeout(() => {
+        Animated.timing(
+          this.state.downloadIconOpacity,
+          {
+            toValue: 0,
+            duration: 700,
+            delay: 500
+          }
+        ).start();
+      }, 500);
 
-    setTimeout(() => {
-      this.setState({
-        downloadIconTop: new Animated.Value(50),
-        pressScreenText: "Image saved to cameraroll"
-      })
+      setTimeout(() => {
+        this.setState({
+          downloadIconTop: new Animated.Value(50),
+          pressScreenText: "Image saved to cameraroll"
+        })
 
-      Animated.timing(
-        this.state.pressScreenTextOpacity,
-        {
-          toValue: 0,
-          duration: 1700,
-        }
-      ).start();
-    }, 1500);
+        Animated.timing(
+          this.state.pressScreenTextOpacity,
+          {
+            toValue: 0,
+            duration: 1700,
+          }
+        ).start();
+      }, 1500);
 
-    setTimeout(() => {
-      this.setState({
-        downloadIconTop: new Animated.Value(50),
-        pressScreenText: ""
-      })
+      setTimeout(() => {
+        this.setState({
+          downloadIconTop: new Animated.Value(50),
+          pressScreenText: ""
+        })
 
-      Animated.timing(
-        this.state.pressScreenTextOpacity,
-        {
-          toValue: 1,
-          duration: 100,
-        }
-      ).start();
-    }, 4000);
+        Animated.timing(
+          this.state.pressScreenTextOpacity,
+          {
+            toValue: 1,
+            duration: 100,
+          }
+        ).start();
+      }, 4000);
 
-    promise.then(function(result) {
-      console.log('save succeeded');
-    }).catch(function(error) {
-      console.log('save failed ' + error);
-    });
-  }
+      promise.then(function(result) {
+        console.log('save succeeded');
+      }).catch(function(error) {
+        console.log('save failed ' + error);
+      });
+    }
 
-  _getRandomInt = (interval) =>
-  {
-      return Math.floor(Math.random() * interval);
-  }
+    _getRandomInt(interval)
+    {
+        return Math.floor(Math.random() * interval);
+    }
 
   render() {
     if (!this.state.fontLoaded) {
@@ -293,8 +292,8 @@ async componentDidMount() {
                         onPress: () => this._screenshotPicture(),
                       },
                       {
-                        label: 'Share to instagram',
-                        onPress: () => this.onShare(),
+                        label: Platform.OS === "ios" ? 'Share to instagram' : 'Share Quote',
+                        onPress: () => this._onShare(),
                       },
                     ]} />
           </Animated.View>
