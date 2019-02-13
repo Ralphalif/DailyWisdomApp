@@ -224,7 +224,7 @@
   [
     "","Imagine your life is perfect in every respect; what would it look like?",""],
   [
-    "","Learn from others. You will no live long enough to figure it all out for yourself.",""],
+    "","Learn from others. You will not live long enough to figure it all out for yourself.",""],
   [
     "","Almost all your unhappiness in life comes from your tendency to blame someone else for somrething.",""],
   [
@@ -374,7 +374,7 @@
   [
     "", "If the wind will not serve, take to the oars.", "Latin Proverb"],
   [
-    "", "You can’t fall if you don’t climb.  But there’s no joy in living your whole life on the ground.", "Unknown"],
+    "", "You can’t fall if you don’t climb.  But there’s no joy in living your whole life on the ground.", ""],
   [
     "", "We must believe that we are gifted for something, and that this thing, at whatever cost, must be attained.", "Marie Curie"],
   [
@@ -408,7 +408,7 @@
   [
     "", "I would rather die of passion than of boredom.", "Vincent van Gogh"],
   [
-    "", "A truly rich man is one whose children run into his arms when his hands are empty.", "Unknown"],
+    "", "A truly rich man is one whose children run into his arms when his hands are empty.", ""],
   [
     "", "It is not what you do for your children, but what you have taught them to do for themselves, that will make them successful human beings.", "Ann Landers"],
   [
@@ -652,8 +652,7 @@
       "Richard Monckton Milnes"
    ],
    [
-      "","To reach a port, we must sail",
-      "Sail, not tie at anchor"
+      "","To reach a port, we must sail. Sail, not tie at anchor", ""
    ],
    [
       "","Success is the child of audacity.",
