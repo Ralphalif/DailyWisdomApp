@@ -83,7 +83,7 @@ export default class HomeScreen extends Component {
         this.state.fadeAnim,
         {
           toValue: 0,
-          duration: 700,
+          duration: 500,
         }
       ).start();
 
@@ -103,7 +103,7 @@ export default class HomeScreen extends Component {
           quoteAuthor: '',
           pressScreenText: '',
         })
-      }, 900);
+      }, 500);
     }
 
   _changeQuote(){
@@ -139,7 +139,7 @@ export default class HomeScreen extends Component {
         this.state.fadeAnim,
         {
           toValue: 1,
-          duration: 700,
+          duration: 800,
         }
       ).start();
   }
