@@ -9,18 +9,19 @@ import {
   Animated,
   ActivityIndicator,
   Emitter,
-  CameraRoll
+  CameraRoll,
+  Share,
+  Platform
 } from 'react-native';
-import { Font, Asset } from 'expo';
+import { Font, Asset, Linking } from 'expo';
 import Images from './images/index.js';
 import Styles from './components/HomeScreenStyle.js';
 import ViewShot from "react-native-view-shot";
+import ReactNativeTooltipMenu from 'react-native-tooltip-menu';
 
-const quoteArray = require('./quotes.json');
-//import RNFS from 'react-native-fs';
-
+var quoteArray = require('./quotes.json');
 var showedImgsArray = [];
-
+var noOfClicks = 0;
 export default class HomeScreen extends Component {
   constructor(props) {
      super(props);
@@ -28,25 +29,56 @@ export default class HomeScreen extends Component {
        quoteText: '',
        quoteAuthor: '',
        quoteFontSize: 30,
-       backgroundImageSource: Images['IMG_12'],
+       backgroundImageSource: Images['IMG_' + Math.floor(Math.random() * 28)],
        fontLoaded: false,
        pressScreenText: 'Press screen for more quotes!',
+       pressScreenTextOpacity: new Animated.Value(1),
        fadeAnim: new Animated.Value(0),
-       downloadIconOpacity: 1
+       downloadIconOpacity: new Animated.Value(0),
+       downloadIconTop: new Animated.Value(300),
      };
    }
 
-async componentDidMount() {
-  await Font.loadAsync({
-      'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
-      'riesling': require('./Fonts/riesling.ttf')
-    });
-    this.setState({
-      fontLoaded: true
-    })
-  }
+   async componentDidMount() {
+     this.quoteArray = await this._shuffleArray(quoteArray)
+     await Font.loadAsync({
+         'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
+         'riesling': require('./Fonts/riesling.ttf')
+       });
+       this.setState({
+         fontLoaded: true
+       })
+     }
 
-  _changeImage = () => {
+   _shuffleArray(array) {
+       for (let i = array.length - 1; i > 0; i--) {
+           const j = Math.floor(Math.random() * (i + 1));
+           [array[i], array[j]] = [array[j], array[i]];
+       }
+   }
+
+ _onShare() {
+   this.setState({
+     pressScreenText: '',
+   })
+
+    this.refs.viewShot.capture().then(uri => {
+
+      if(Platform.OS === "android")
+      {
+        Share.share({
+           message: this.state.quoteText + this.state.quoteAuthor ,
+           url: uri
+       });
+      } else {
+       var origURL = CameraRoll.saveToCameraRoll(uri);
+       let instagramURL = `instagram://library?AssetPath=${uri}`;
+       Linking.openURL(instagramURL);
+     }
+  });
+ };
+
+  _changeImage(){
       Animated.timing(
         this.state.fadeAnim,
         {
@@ -55,19 +87,18 @@ async componentDidMount() {
         }
       ).start();
 
-      var imgName = 'IMG_' + this._getRandomInt(28);
-      while(showedImgsArray.includes(imgName)){
-          imgName = 'IMG_' + this._getRandomInt(28);
+      var imgNr = this._getRandomInt(80);
+      while(showedImgsArray.includes(imgNr)){
+          imgNr = this._getRandomInt(80);
        }
-       showedImgsArray.push(imgName);
+       showedImgsArray.push(imgNr);
 
-       if(showedImgsArray.length == 10)
-       showedImgsArray = [];
-
+       if(showedImgsArray.length == 60)
+       showedImgsArray.shift();
 
       setTimeout(() => {
         this.setState({
-          backgroundImageSource: Images[imgName],
+          backgroundImageSource: Images['IMG_' + imgNr],
           quoteText: '',
           quoteAuthor: '',
           pressScreenText: '',
@@ -75,8 +106,15 @@ async componentDidMount() {
       }, 900);
     }
 
-  _changeQuote = () => {
-      var randomQuote = quoteArray[this._getRandomInt(quoteArray.length)];
+  _changeQuote(){
+      var randomQuote = quoteArray[noOfClicks];
+      noOfClicks++;
+
+      if(noOfClicks == quoteArray.length){
+        this._shuffleArray(quoteArray);
+        noOfClicks = 0;
+      }
+
       var quote = randomQuote[1];
       var author = randomQuote[2];
       var quoteFontSize = 30;
@@ -90,10 +128,9 @@ async componentDidMount() {
       else if(quote.length > 145)
         quoteFontSize = 25;
 
-
       this.setState({
         quoteText: quote,
-        quoteAuthor: author.trim() == '' ? author : "\n-- " + author,
+        quoteAuthor: "\n" + author,
         quoteFontSize: quoteFontSize,
         fontLoaded: true
       })
@@ -107,44 +144,93 @@ async componentDidMount() {
       ).start();
   }
 
-  async _screenshotPicture () {
+  async _screenshotPicture(){
     let permission = await Expo.Permissions.askAsync(Expo.Permissions.CAMERA_ROLL);
 
     if (permission.status === 'granted') {
       this.setState({
-        downloadIconOpacity: 0,
         pressScreenText: ""
       })
 
-      setTimeout(() => {
-
-
-        this.refs.viewShot.capture().then(uri => {
-           console.log("do something with ", uri);
-           this._savePicture(uri);
-           this.setState({
-             downloadIconOpacity: 1,
-           })
-
-        });
-      }, 900);
+      this.refs.viewShot.capture().then(uri => {
+         this._savePicture(uri);
+         console.log(uri);
+      });
     }
-
   }
 
   _savePicture(uri){
     var promise = CameraRoll.saveToCameraRoll(uri);
-    promise.then(function(result) {
-      console.log('save succeeded ' + result);
-    }).catch(function(error) {
-      console.log('save failed ' + error);
-    });
-  }
 
-  _getRandomInt = (interval) =>
-  {
-      return Math.floor(Math.random() * interval);
-  }
+      Animated.parallel([
+        Animated.timing(
+          this.state.downloadIconOpacity,
+          {
+            toValue: 1,
+            duration: 500,
+          }
+        ),
+        Animated.timing(
+          this.state.downloadIconTop,
+          {
+            toValue: 1000,
+            duration: 2100,
+          }
+        )
+      ]).start();
+
+      setTimeout(() => {
+        Animated.timing(
+          this.state.downloadIconOpacity,
+          {
+            toValue: 0,
+            duration: 700,
+            delay: 500
+          }
+        ).start();
+      }, 500);
+
+      setTimeout(() => {
+        this.setState({
+          downloadIconTop: new Animated.Value(50),
+          pressScreenText: "Image saved to cameraroll"
+        })
+
+        Animated.timing(
+          this.state.pressScreenTextOpacity,
+          {
+            toValue: 0,
+            duration: 1700,
+          }
+        ).start();
+      }, 1500);
+
+      setTimeout(() => {
+        this.setState({
+          downloadIconTop: new Animated.Value(50),
+          pressScreenText: ""
+        })
+
+        Animated.timing(
+          this.state.pressScreenTextOpacity,
+          {
+            toValue: 1,
+            duration: 100,
+          }
+        ).start();
+      }, 4000);
+
+      promise.then(function(result) {
+        console.log('save succeeded');
+      }).catch(function(error) {
+        console.log('save failed ' + error);
+      });
+    }
+
+    _getRandomInt(interval)
+    {
+        return Math.floor(Math.random() * interval);
+    }
 
   render() {
     if (!this.state.fontLoaded) {
@@ -175,17 +261,41 @@ async componentDidMount() {
                         {this.state.quoteAuthor}
                     </Text>
                   </Text>
-                  <Text style={Styles.pressScreenText}>
-                    {this.state.pressScreenText}
-                  </Text>
+                  <Animated.View style={{ opacity: this.state.pressScreenTextOpacity }} >
+                    <Text style={Styles.pressScreenText}>
+                      {this.state.pressScreenText}
+                    </Text>
+                  </Animated.View>
                 </View>
                 </ViewShot>
+                <Animated.View style={{opacity: this.state.downloadIconOpacity, top: this.state.downloadIconTop}} >
+                <Image style={{
+                           alignSelf: 'center'}}
+                       source={require('./images/iconUglyDownload.png')} />
+                 </Animated.View>
+
               </TouchableOpacity>
 
-              <TouchableOpacity style={{top: '92%', left: '85%', opacity: this.state.downloadIconOpacity}} onPress={() => this._screenshotPicture()}>
-                <Image style={{ height: 50, width: 50 }} source={require('./images/iconDownload.png')} />
-              </TouchableOpacity>
-
+              <ReactNativeTooltipMenu
+                    buttonComponent={
+                      <View style={{
+                          backgroundColor: color='rgba(255, 238, 170, 0.7)',
+                          padding: 10,
+                          borderRadius: 25,
+                        }}>
+                        <Image source={require('./images/iconMenu.png')} />
+                      </View>
+                    }
+                    items={[
+                      {
+                        label: 'Save image to device',
+                        onPress: () => this._screenshotPicture(),
+                      },
+                      {
+                        label: Platform.OS === "ios" ? 'Share to instagram' : 'Share Quote',
+                        onPress: () => this._onShare(),
+                      },
+                    ]} />
           </Animated.View>
 
       </View>
