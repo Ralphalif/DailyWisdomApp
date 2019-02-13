@@ -29,7 +29,7 @@ export default class HomeScreen extends Component {
        quoteText: '',
        quoteAuthor: '',
        quoteFontSize: 30,
-       backgroundImageSource: Images['IMG_' + Math.floor(Math.random() * 80)],
+       backgroundImageSource: Images['IMG_' + Math.floor(Math.random() * 60)],
        fontLoaded: false,
        pressScreenText: 'Press screen for more quotes!',
        pressScreenTextOpacity: new Animated.Value(1),
@@ -87,13 +87,13 @@ export default class HomeScreen extends Component {
         }
       ).start();
 
-      var imgNr = this._getRandomInt(80);
+      var imgNr = this._getRandomInt(60);
       while(showedImgsArray.includes(imgNr)){
-          imgNr = this._getRandomInt(80);
+          imgNr = this._getRandomInt(60);
        }
        showedImgsArray.push(imgNr);
 
-       if(showedImgsArray.length == 50)
+       if(showedImgsArray.length == 35)
        showedImgsArray.shift();
 
       setTimeout(() => {
