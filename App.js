@@ -19,6 +19,7 @@ import Images from './images/index.js';
 import Styles from './components/HomeScreenStyle.js';
 import ViewShot from "react-native-view-shot";
 import ReactNativeTooltipMenu from 'react-native-tooltip-menu';
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
 var quoteArray = require('./quotes.json');
 
@@ -59,6 +60,12 @@ export default class HomeScreen extends Component {
        })
 
        this._changeImage();
+
+       setTimeout(() => {
+         this.setState({
+           pressScreenText: "Swipe for more quotes"
+         })
+       }, 700);
      }
 
 
@@ -98,10 +105,11 @@ async _matchImgAndQuote(){
  };
 
   _previousQuote(){
-   if(noOfClicks > 1)
-      noOfClicks = noOfClicks - 2;
+   if(noOfClicks > 1){
+     noOfClicks = noOfClicks - 2;
+     this._changeImage();
+   }
 
-   this._changeImage();
  }
 
   _changeImage(){
@@ -256,7 +264,8 @@ async _matchImgAndQuote(){
           Daily Wisdom
         </Text>
         <Animated.View style={[Styles.backgroundContainer, {opacity: this.state.fadeAnim}]} >
-              <TouchableWithoutFeedback style={Styles.container}  onPress={() => this._changeImage()}   >
+        <GestureRecognizer style={Styles.container} onSwipeRight={() => this._previousQuote()}
+        onSwipeLeft={() => this._changeImage()} >
               <View style={Styles.container} >
               <ViewShot ref="viewShot" style={Styles.container}  options={{ format: "jpg", quality: 0.9 }}>
                 <View style={Styles.backgroundContainer}>
@@ -285,7 +294,6 @@ async _matchImgAndQuote(){
                        source={require('./images/iconUglyDownload.png')} />
                  </Animated.View>
                  </View>
-              </TouchableWithoutFeedback>
 
               <ReactNativeTooltipMenu
                     buttonComponent={
@@ -299,10 +307,6 @@ async _matchImgAndQuote(){
                     }
                     items={[
                       {
-                        label: 'Previous Quote',
-                        onPress: () => this._previousQuote(),
-                      },
-                      {
                         label: 'Save image to device',
                         onPress: () => this._screenshotPicture(),
                       },
@@ -311,6 +315,7 @@ async _matchImgAndQuote(){
                         onPress: () => this._onShare(),
                       },
                     ]} />
+</ GestureRecognizer>
           </Animated.View>
 
       </View>

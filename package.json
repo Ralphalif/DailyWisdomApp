@@ -11,6 +11,7 @@
     "react": "16.5.0",
     "react-native": "https://github.com/expo/react-native/archive/sdk-32.0.0.tar.gz",
     "react-native-fs": "^2.13.3",
+    "react-native-swipe-gestures": "^1.0.3",
     "react-native-tooltip-menu": "^1.1.2",
     "react-native-view-shot": "^2.5.0"
   },
