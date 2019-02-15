@@ -77,6 +77,8 @@ async _matchImgAndQuote(){
   var numbersArray = Array(80).fill(0).map((e,i)=>i+1);
   this.numbersArray = this._shuffleArray(numbersArray);
 
+  this.quoteArray = this._shuffleArray(quoteArray);
+
   var j = 0;
   for(var i = 0; i < quoteArray.length; i++){
    if(j == 80)
@@ -278,7 +280,7 @@ _fadeIn(){
     this.state.activityIndicatorOpacity,
     {
       toValue: 0,
-      duration: 1000,
+      duration: 600,
     }
   ).start();
 
@@ -312,6 +314,7 @@ _fadeIn(){
                     <ImageBackground style={Styles.backgroundContainer} source={this.state.backgroundImageSource}
                     onLoad={() => this._fadeIn()}/>
                   </View>
+
                   <View>
                     <Text style={Styles.headText} animation="slideInDown" duration={900} >
                       Daily Wisdom
@@ -323,14 +326,14 @@ _fadeIn(){
                       </Text>
                     </Animatable.Text>
                     <Animatable.View ref={this.swipeTextRef}>
-
-                    <Animated.View style={{ opacity: this.state.pressScreenTextOpacity }} >
-                      <Animatable.Text style={Styles.pressScreenText} animation="zoomInUp" duration={2300}>
-                        {this.state.pressScreenText}
-                      </Animatable.Text>
-                    </Animated.View>
+                      <Animated.View style={{ opacity: this.state.pressScreenTextOpacity }} >
+                        <Animatable.Text style={Styles.pressScreenText} animation="zoomInUp" duration={2300}>
+                          {this.state.pressScreenText}
+                        </Animatable.Text>
+                      </Animated.View>
                     </Animatable.View>
                   </View>
+
                   </ViewShot>
                   <Animated.View style={{opacity: this.state.downloadIconOpacity, top: this.state.downloadIconTop}} >
                   <Image style={{ alignSelf: 'center'}}
