@@ -116,15 +116,9 @@ async _matchImgAndQuote(){
        if(showedImgsArray.length == 35)
        showedImgsArray.shift();
 
-      setTimeout(() => {
         this.setState({
           backgroundImageSource: Images['IMG_' + randomQuote[3]],
-          quoteText: '',
-          quoteAuthor: '',
-          pressScreenText: '',
         })
-         this._changeQuote(randomQuote[1], randomQuote[2]);
-      }, 400);
     }
 
   _changeQuote(quote, author){
@@ -237,9 +231,16 @@ async _matchImgAndQuote(){
 
 
   _swipeForward(){
-    this.view.fadeOutLeftBig(300);
-    this._changeImage();
+    this.view.fadeOutLeftBig(600);
+
+    setTimeout(() => {
+      this._changeImage();
+    }, 160);
     this.direction = 'right'
+
+    this.setState({
+      pressScreenText: ""
+    })
 
     Animated.timing(
       this.state.activityIndicatorOpacity,
@@ -261,8 +262,11 @@ async _matchImgAndQuote(){
       ).start();
 
       noOfClicks = noOfClicks - 2;
-      this.view.fadeOutRightBig(300);
-      this._previousQuote();
+      this.view.fadeOutRightBig(600);
+
+      setTimeout(() => {
+        this._previousQuote();
+      }, 160);
       this.direction = 'left'
     }
   }
@@ -275,11 +279,15 @@ _fadeIn(){
       duration: 1000,
     }
   ).start();
+
+  this._changeQuote(quoteArray[noOfClicks][1], quoteArray[noOfClicks][2]);
+
+
   if(this.direction == 'right'){
-    this.view.fadeInRightBig(600);
+    this.view.fadeInRightBig(800);
   }
   else if(this.direction == 'left'){
-    this.view.fadeInLeftBig(600);
+    this.view.fadeInLeftBig(800);
   }
 }
 
