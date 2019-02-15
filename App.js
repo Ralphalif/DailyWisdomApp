@@ -29,6 +29,9 @@ var matchingQuotesImages= [];
 var noOfClicks = 0;
 var direction = '';
 export default class HomeScreen extends Component {
+  handleViewRef = ref => this.view = ref;
+  swipeTextRef =  ref => this.view = ref;
+
   constructor(props) {
      super(props);
      this.state = {
@@ -56,6 +59,7 @@ export default class HomeScreen extends Component {
        'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
        'riesling': require('./Fonts/riesling.ttf')
      });
+
      this.setState({
        fontLoaded: true,
      })
@@ -230,12 +234,10 @@ async _matchImgAndQuote(){
         return Math.floor(Math.random() * interval);
     }
 
-    handleViewRef = ref => this.view = ref;
-    swipeTextRef =  ref => this.view = ref;
 
 
   _swipeForward(){
-    this.view.fadeOutLeftBig(1200);
+    this.view.fadeOutLeftBig(300);
     this._changeImage();
     this.direction = 'right'
 
@@ -246,7 +248,6 @@ async _matchImgAndQuote(){
         duration: 1000,
       }
     ).start();
-
   }
 
   _swipeBack(){
@@ -260,7 +261,7 @@ async _matchImgAndQuote(){
       ).start();
 
       noOfClicks = noOfClicks - 2;
-      this.view.fadeOutRightBig(1200);
+      this.view.fadeOutRightBig(300);
       this._previousQuote();
       this.direction = 'left'
     }
@@ -275,10 +276,10 @@ _fadeIn(){
     }
   ).start();
   if(this.direction == 'right'){
-    this.view.fadeInRightBig(1200);
+    this.view.fadeInRightBig(600);
   }
   else if(this.direction == 'left'){
-    this.view.fadeInLeftBig(1200);
+    this.view.fadeInLeftBig(600);
   }
 }
 
@@ -302,7 +303,7 @@ _fadeIn(){
                     onLoad={() => this._fadeIn()}/>
                   </View>
                   <View>
-                    <Text style={Styles.headText}>
+                    <Text style={Styles.headText} animation="slideInDown" duration={900} >
                       Daily Wisdom
                     </Text>
                     <Animatable.Text animation="slideInUp" duration={1500} style={[Styles.quoteText, {fontSize: this.state.quoteFontSize}]} >
@@ -318,9 +319,7 @@ _fadeIn(){
                         {this.state.pressScreenText}
                       </Animatable.Text>
                     </Animated.View>
-
                     </Animatable.View>
-
                   </View>
                   </ViewShot>
                   <Animated.View style={{opacity: this.state.downloadIconOpacity, top: this.state.downloadIconTop}} >
