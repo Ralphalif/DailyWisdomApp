@@ -74,15 +74,17 @@ export default class HomeScreen extends Component {
    }
 
 async _matchImgAndQuote(){
+  var numbersArray = Array(80).fill(0).map((e,i)=>i+1);
+  this.numbersArray = this._shuffleArray(numbersArray);
+
   var j = 0;
   for(var i = 0; i < quoteArray.length; i++){
    if(j == 80)
-     j = 0;
+      j = 0;
 
-    quoteArray[i][3] = j;
+    quoteArray[i][3] = numbersArray[j];
     j++;
   };
-  this.quoteArray = await this._shuffleArray(quoteArray);
  }
 
  _onShare() {
