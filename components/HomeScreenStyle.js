@@ -34,10 +34,8 @@ const styles = StyleSheet.create({
   },
   quoteText: {
     color: '#FFF',
-    fontSize: 30,
     textAlign: 'center',
     backgroundColor: 'rgba(0,0,0,0.2)',
-    width: '100%',
    fontFamily: 'merriweather-regular',
   },
   authorText: {
