@@ -20,14 +20,28 @@ import Styles from './components/HomeScreenStyle.js';
 import ViewShot from "react-native-view-shot";
 import ReactNativeTooltipMenu from 'react-native-tooltip-menu';
 import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
+import * as Animatable from 'react-native-animatable';
+
 
 var quoteArray = require('./quotes.json');
-
 var showedImgsArray = [];
-
 var matchingQuotesImages= [];
 var noOfClicks = 0;
+var direction = '';
 export default class HomeScreen extends Component {
+  constructor(props) {
+     super(props);
+     this.state = {
+       quoteFontSize: 30,
+       fontLoaded: false,
+       pressScreenTextOpacity: new Animated.Value(1),
+       fadeAnim: new Animated.Value(0),
+       downloadIconOpacity: new Animated.Value(0),
+       downloadIconTop: new Animated.Value(300),
+       activityIndicatorOpacity: new Animated.Value(0),
+     };
+   }
+
   _shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -35,39 +49,25 @@ export default class HomeScreen extends Component {
       }
   }
 
-  constructor(props) {
-     super(props);
-     this.state = {
-       quoteFontSize: 30,
-       fontLoaded: false,
-       pressScreenText: 'Press screen for more quotes!',
-       pressScreenTextOpacity: new Animated.Value(1),
-       fadeAnim: new Animated.Value(0),
-       downloadIconOpacity: new Animated.Value(0),
-       downloadIconTop: new Animated.Value(300),
-     };
-   }
+ async componentDidMount() {
+   this._matchImgAndQuote()
 
-   async componentDidMount() {
-     this._matchImgAndQuote()
+   await Font.loadAsync({
+       'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
+       'riesling': require('./Fonts/riesling.ttf')
+     });
+     this.setState({
+       fontLoaded: true,
+     })
 
-     await Font.loadAsync({
-         'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
-         'riesling': require('./Fonts/riesling.ttf')
-       });
+     this._changeImage();
+
+     setTimeout(() => {
        this.setState({
-         fontLoaded: true
+         pressScreenText: "Swipe for more"
        })
-
-       this._changeImage();
-
-       setTimeout(() => {
-         this.setState({
-           pressScreenText: "Swipe for more quotes"
-         })
-       }, 700);
-     }
-
+     }, 700);
+   }
 
 async _matchImgAndQuote(){
   var j = 0;
@@ -79,48 +79,33 @@ async _matchImgAndQuote(){
     j++;
   };
   this.quoteArray = await this._shuffleArray(quoteArray);
-}
-
-
-
- _onShare() {
-   this.setState({
-     pressScreenText: '',
-   })
-
-    this.refs.viewShot.capture().then(uri => {
-
-      if(Platform.OS === "android")
-      {
-        Share.share({
-           message: this.state.quoteText + this.state.quoteAuthor ,
-           url: uri
-       });
-      } else {
-       var origURL = CameraRoll.saveToCameraRoll(uri);
-       let instagramURL = `instagram://library?AssetPath=${uri}`;
-       Linking.openURL(instagramURL);
-     }
-  });
- };
-
-  _previousQuote(){
-   if(noOfClicks > 1){
-     noOfClicks = noOfClicks - 2;
-     this._changeImage();
-   }
-
  }
 
-  _changeImage(){
-      Animated.timing(
-        this.state.fadeAnim,
-        {
-          toValue: 0,
-          duration: 400,
-        }
-      ).start();
+ _onShare() {
+     this.setState({
+       pressScreenText: '',
+     })
 
+      this.refs.viewShot.capture().then(uri => {
+        if(Platform.OS === "android")
+        {
+          Share.share({
+             message: this.state.quoteText + this.state.quoteAuthor ,
+             url: uri
+         });
+        } else {
+         var origURL = CameraRoll.saveToCameraRoll(uri);
+         let instagramURL = `instagram://library?AssetPath=${uri}`;
+         Linking.openURL(instagramURL);
+       }
+    });
+   };
+
+  _previousQuote(){
+       this._changeImage();
+   }
+
+  _changeImage(){
       var randomQuote = quoteArray[noOfClicks];
       noOfClicks++;
 
@@ -161,10 +146,10 @@ async _matchImgAndQuote(){
         this.state.fadeAnim,
         {
           toValue: 1,
-          duration: 700,
+          duration: 500,
         }
       ).start();
-  }
+   }
 
   async _screenshotPicture(){
     let permission = await Expo.Permissions.askAsync(Expo.Permissions.CAMERA_ROLL);
@@ -183,7 +168,6 @@ async _matchImgAndQuote(){
 
   _savePicture(uri){
     var promise = CameraRoll.saveToCameraRoll(uri);
-
       Animated.parallel([
         Animated.timing(
           this.state.downloadIconOpacity,
@@ -207,10 +191,9 @@ async _matchImgAndQuote(){
           {
             toValue: 0,
             duration: 700,
-            delay: 500
           }
         ).start();
-      }, 500);
+      }, 700);
 
       setTimeout(() => {
         this.setState({
@@ -230,16 +213,9 @@ async _matchImgAndQuote(){
       setTimeout(() => {
         this.setState({
           downloadIconTop: new Animated.Value(50),
-          pressScreenText: ""
+          pressScreenText: "",
+          pressScreenTextOpacity: new Animated.Value(1)
         })
-
-        Animated.timing(
-          this.state.pressScreenTextOpacity,
-          {
-            toValue: 1,
-            duration: 100,
-          }
-        ).start();
       }, 4000);
 
       promise.then(function(result) {
@@ -254,76 +230,134 @@ async _matchImgAndQuote(){
         return Math.floor(Math.random() * interval);
     }
 
+    handleViewRef = ref => this.view = ref;
+    swipeTextRef =  ref => this.view = ref;
+
+
+  _swipeForward(){
+    this.view.fadeOutLeftBig(1200);
+    this._changeImage();
+    this.direction = 'right'
+
+    Animated.timing(
+      this.state.activityIndicatorOpacity,
+      {
+        toValue: 1,
+        duration: 1000,
+      }
+    ).start();
+
+  }
+
+  _swipeBack(){
+    if(noOfClicks > 1){
+      Animated.timing(
+        this.state.activityIndicatorOpacity,
+        {
+          toValue: 1,
+          duration: 1000,
+        }
+      ).start();
+
+      noOfClicks = noOfClicks - 2;
+      this.view.fadeOutRightBig(1200);
+      this._previousQuote();
+      this.direction = 'left'
+    }
+  }
+
+_fadeIn(){
+  Animated.timing(
+    this.state.activityIndicatorOpacity,
+    {
+      toValue: 0,
+      duration: 1000,
+    }
+  ).start();
+  if(this.direction == 'right'){
+    this.view.fadeInRightBig(1200);
+  }
+  else if(this.direction == 'left'){
+    this.view.fadeInLeftBig(1200);
+  }
+}
+
   render() {
     if (!this.state.fontLoaded) {
         return null;
       }
     return (
       <View style={Styles.container}>
-        <Text style={Styles.headText}>
+        <Animatable.Text animation="slideInDown" duration={900} style={Styles.headText}>
           Daily Wisdom
-        </Text>
+        </Animatable.Text>
+
         <Animated.View style={[Styles.backgroundContainer, {opacity: this.state.fadeAnim}]} >
-        <GestureRecognizer style={Styles.container} onSwipeRight={() => this._previousQuote()}
-        onSwipeLeft={() => this._changeImage()} >
-              <View style={Styles.container} >
-              <ViewShot ref="viewShot" style={Styles.container}  options={{ format: "jpg", quality: 0.9 }}>
-                <View style={Styles.backgroundContainer}>
-                  <ImageBackground style={Styles.backgroundContainer} source={this.state.backgroundImageSource}
-                  />
-                </View>
-                <View>
-                  <Text style={Styles.headText}>
-                    Daily Wisdom
-                  </Text>
-                  <Text style={[Styles.quoteText, {fontSize: this.state.quoteFontSize}]} >
-                    {this.state.quoteText}
-                    <Text style={Styles.authorText}>
-                        {this.state.quoteAuthor}
+          <GestureRecognizer style={Styles.container} onSwipeRight={() => this._swipeBack()}
+          onSwipeLeft={() => this._swipeForward()} >
+                <Animatable.View ref={this.handleViewRef} style={Styles.container} >
+                <ViewShot ref="viewShot" style={Styles.container}  options={{ format: "jpg", quality: 0.9 }}>
+                  <View style={Styles.backgroundContainer}>
+                    <ImageBackground style={Styles.backgroundContainer} source={this.state.backgroundImageSource}
+                    onLoad={() => this._fadeIn()}/>
+                  </View>
+                  <View>
+                    <Text style={Styles.headText}>
+                      Daily Wisdom
                     </Text>
-                  </Text>
-                  <Animated.View style={{ opacity: this.state.pressScreenTextOpacity }} >
-                    <Text style={Styles.pressScreenText}>
-                      {this.state.pressScreenText}
-                    </Text>
-                  </Animated.View>
-                </View>
-                </ViewShot>
-                <Animated.View style={{opacity: this.state.downloadIconOpacity, top: this.state.downloadIconTop}} >
-                <Image style={{ alignSelf: 'center'}}
-                       source={require('./images/iconUglyDownload.png')} />
-                 </Animated.View>
-                 </View>
+                    <Animatable.Text animation="slideInUp" duration={1500} style={[Styles.quoteText, {fontSize: this.state.quoteFontSize}]} >
+                      {this.state.quoteText}
+                      <Text style={Styles.authorText}>
+                          {this.state.quoteAuthor}
+                      </Text>
+                    </Animatable.Text>
+                    <Animatable.View ref={this.swipeTextRef}>
 
-              <ReactNativeTooltipMenu
-                    buttonComponent={
-                      <View style={{
-                          backgroundColor: color='rgba(255, 238, 170, 0.7)',
-                          padding: 10,
-                          borderRadius: 25,
-                        }}>
-                        <Image source={require('./images/iconMenu.png')} />
-                      </View>
-                    }
-                    items={[
-                      {
-                        label: 'Save image to device',
-                        onPress: () => this._screenshotPicture(),
-                      },
-                      {
-                        label: Platform.OS === "ios" ? 'Share to instagram' : 'Share Quote',
-                        onPress: () => this._onShare(),
-                      },
-                    ]} />
-</ GestureRecognizer>
+                    <Animated.View style={{ opacity: this.state.pressScreenTextOpacity }} >
+                      <Animatable.Text style={Styles.pressScreenText} animation="zoomInUp" duration={2300}>
+                        {this.state.pressScreenText}
+                      </Animatable.Text>
+                    </Animated.View>
+
+                    </Animatable.View>
+
+                  </View>
+                  </ViewShot>
+                  <Animated.View style={{opacity: this.state.downloadIconOpacity, top: this.state.downloadIconTop}} >
+                  <Image style={{ alignSelf: 'center'}}
+                         source={require('./images/iconUglyDownload.png')} />
+                   </Animated.View>
+                 </Animatable.View>
+
+                 <Animated.View style={{top: '40%', opacity: this.state.activityIndicatorOpacity}}>
+             <ActivityIndicator size="large" color='rgba(255, 238, 170, 0.8)'/>
+           </Animated.View>
+
+                <ReactNativeTooltipMenu
+                      buttonComponent={
+                        <View style={{
+                            backgroundColor: color='rgba(255, 238, 170, 0.7)',
+                            padding: 10,
+                            borderRadius: 25,
+                          }}>
+                          <Image source={require('./images/iconMenu.png')} />
+                        </View>
+                      }
+                      items={[
+                        {
+                          label: 'Save image to device',
+                          onPress: () => this._screenshotPicture(),
+                        },
+                        {
+                          label: Platform.OS === "ios" ? 'Share to instagram' : 'Share Quote',
+                          onPress: () => this._onShare(),
+                        },
+                      ]} />
+            </ GestureRecognizer>
           </Animated.View>
-
       </View>
     );
   }
 };
 
-// <TouchableOpacity style={{position: 'absolute', backgroundColor: 'rgba(255, 238, 170, 0.2)', height: '90%', width: '10%'}}
-// onPress={() => this._lastImg()}>
-// </TouchableOpacity>
 AppRegistry.registerComponent('HomeScreen', () => HomeScreen);
