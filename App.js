@@ -29,6 +29,9 @@ var matchingQuotesImages= [];
 var noOfClicks = 0;
 var direction = '';
 export default class HomeScreen extends Component {
+  handleViewRef = ref => this.view = ref;
+  swipeTextRef =  ref => this.view = ref;
+
   constructor(props) {
      super(props);
      this.state = {
@@ -56,6 +59,7 @@ export default class HomeScreen extends Component {
        'merriweather-regular': require('./Fonts/merriweather/merriweather-regular-webfont.ttf'),
        'riesling': require('./Fonts/riesling.ttf')
      });
+
      this.setState({
        fontLoaded: true,
      })
@@ -112,15 +116,9 @@ async _matchImgAndQuote(){
        if(showedImgsArray.length == 35)
        showedImgsArray.shift();
 
-      setTimeout(() => {
         this.setState({
           backgroundImageSource: Images['IMG_' + randomQuote[3]],
-          quoteText: '',
-          quoteAuthor: '',
-          pressScreenText: '',
         })
-         this._changeQuote(randomQuote[1], randomQuote[2]);
-      }, 400);
     }
 
   _changeQuote(quote, author){
@@ -230,14 +228,19 @@ async _matchImgAndQuote(){
         return Math.floor(Math.random() * interval);
     }
 
-    handleViewRef = ref => this.view = ref;
-    swipeTextRef =  ref => this.view = ref;
 
 
   _swipeForward(){
-    this.view.fadeOutLeftBig(1200);
-    this._changeImage();
+    this.view.fadeOutLeftBig(600);
+
+    setTimeout(() => {
+      this._changeImage();
+    }, 160);
     this.direction = 'right'
+
+    this.setState({
+      pressScreenText: ""
+    })
 
     Animated.timing(
       this.state.activityIndicatorOpacity,
@@ -246,7 +249,6 @@ async _matchImgAndQuote(){
         duration: 1000,
       }
     ).start();
-
   }
 
   _swipeBack(){
@@ -260,8 +262,11 @@ async _matchImgAndQuote(){
       ).start();
 
       noOfClicks = noOfClicks - 2;
-      this.view.fadeOutRightBig(1200);
-      this._previousQuote();
+      this.view.fadeOutRightBig(600);
+
+      setTimeout(() => {
+        this._previousQuote();
+      }, 160);
       this.direction = 'left'
     }
   }
@@ -274,11 +279,15 @@ _fadeIn(){
       duration: 1000,
     }
   ).start();
+
+  this._changeQuote(quoteArray[noOfClicks][1], quoteArray[noOfClicks][2]);
+
+
   if(this.direction == 'right'){
-    this.view.fadeInRightBig(1200);
+    this.view.fadeInRightBig(800);
   }
   else if(this.direction == 'left'){
-    this.view.fadeInLeftBig(1200);
+    this.view.fadeInLeftBig(800);
   }
 }
 
@@ -302,7 +311,7 @@ _fadeIn(){
                     onLoad={() => this._fadeIn()}/>
                   </View>
                   <View>
-                    <Text style={Styles.headText}>
+                    <Text style={Styles.headText} animation="slideInDown" duration={900} >
                       Daily Wisdom
                     </Text>
                     <Animatable.Text animation="slideInUp" duration={1500} style={[Styles.quoteText, {fontSize: this.state.quoteFontSize}]} >
@@ -318,9 +327,7 @@ _fadeIn(){
                         {this.state.pressScreenText}
                       </Animatable.Text>
                     </Animated.View>
-
                     </Animatable.View>
-
                   </View>
                   </ViewShot>
                   <Animated.View style={{opacity: this.state.downloadIconOpacity, top: this.state.downloadIconTop}} >
